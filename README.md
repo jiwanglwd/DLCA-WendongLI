@@ -44,6 +44,9 @@ A C++ implementation of the **diffusion-limited cluster-cluster aggregation** (D
         ```
         # C++11 support required
         make
+        ```
+        
+        ```
         bin/dlca [D] [L] [N] [F]
         ```
 

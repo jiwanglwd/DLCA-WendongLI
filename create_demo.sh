@@ -35,15 +35,15 @@ run () {
             echo $BASENAME.txt
             python plot_2d.py $L $FILE $DEMO_DIR/$BASENAME.png $M
         done
-    elif [ $d == 3 ]; then
+    elif [ $D == 3 ]; then
         GIF_DELAY=$GIF_DELAY_D3
         AZIM=$D3_AZIM_0
         for FILE in $DEMO_DIR/*.txt
         do
             BASENAME=$(basename $FILE .txt)
             echo $BASENAME.txt
-            i=1
-            while [ $i -le $D3_FPS ]; do
+            for i in $(seq 1 $D3_FPS)
+            do
                 python plot_3d.py $L $FILE $DEMO_DIR/$BASENAME.$(printf %03d $i).png $M $D3_ELEV $AZIM
                 AZIM=$(($AZIM+$D3_AZIM_FDELTA))
             done

@@ -17,60 +17,61 @@ A C++ implementation of the **diffusion-limited cluster-cluster aggregation** (D
     - ```[P]``` The period for snapshots.
 
     - ```[I]``` The number of iterations.
-    
+
     - ```[M]``` The marker size of plots.
 
-2. Windows
+    - ```[ELEV]``` The elevation angle.
 
-    - Single run
+    - ```[AZIM]``` The azimuthal angle.
+
+2. Single run
+
+    - Windows
 
         - 32-bit
 
-            ```bat
+            ```
             exe\win32\DLCA.exe [D] [L] [N] [F]
             ```
 
         - 64-bit
 
-            ```bat
+            ```
             exe\win64\DLCA.exe [D] [L] [N] [F]
             ```
+    - Linux
 
-    - Visualizing single run
-    
         ```
-        python visualize.py [D] [L] [INPUT] [OUTPUT] [M]
+        # C++11 support required
+        make
+        bin/dlca [D] [L] [N] [F]
         ```
-            
-    - Creating GIF ([Python](https://www.python.org/), [matplotlib](http://matplotlib.org/), and [ImageMagick](http://www.imagemagick.org/) required)
 
-        ```bat
+3. Plotting single run ([Python](https://www.python.org/), [NumPy](http://www.numpy.org/), and [matplotlib](http://matplotlib.org/) required)
+
+    - 2D
+
+        ```
+        python plot_2d.py [L] [INPUT] [OUTPUT] [M]
+        ```
+
+    - 3D
+
+        ```
+        python plot_3d.py [L] [INPUT] [OUTPUT] [M] [ELEV] [AZIM]
+        ```
+
+4. Creating GIF ([ImageMagick](http://www.imagemagick.org/) required)
+
+    - Windows
+
+        ```
         create_demo.bat [D] [L] [N] [P] [M]
         ```
 
-3. Linux
+    - Linux
 
-    - Build (C++11 support required)
-
-        ```sh
-        make
         ```
-
-    - Single run
-
-        ```sh
-        bin/dlca [D] [L] [N] [F]
-        ```
-        
-    - Visualizing single run
-    
-        ```
-        python visualize.py [D] [L] [INPUT] [OUTPUT] [M]
-        ```
-        
-    - Creating GIF ([Python](https://www.python.org/), [matplotlib](http://matplotlib.org/), and [ImageMagick](http://www.imagemagick.org/) required)
-
-        ```sh
         create_demo.sh [D] [L] [N] [P] [M]
         ```
 
@@ -87,6 +88,10 @@ A C++ implementation of the **diffusion-limited cluster-cluster aggregation** (D
 - [D2.L1024.N50000](https://github.com/zhangns/DLCA/tree/master/demo/D2.L1024.N50000)
 
     ![D2.L1024.N50000](https://raw.githubusercontent.com/zhangns/DLCA/master/demo/D2.L1024.N50000/animation.gif)
+
+- [D3.L100.N6000](https://github.com/zhangns/DLCA/tree/master/demo/D3.L100.N6000)
+
+    ![D3.L100.N6000](https://raw.githubusercontent.com/zhangns/DLCA/master/demo/D3.L100.N6000/animation.gif)
 
 # Related info
 

@@ -21,7 +21,11 @@
 #include <iostream>
 #include <fstream>
 #include "uf_forest.h"
+#include <ctime>
+#include <string>
+#include <cmath>
 
+using namespace std;
 using std::cin;
 using std::cout;
 using std::cerr;
@@ -45,13 +49,27 @@ void test_uf_forest() {
     cout << uf_forest << endl;
 }
 
+string getTime()
+{
+    time_t timep;
+    time(&timep);
+    char tmp[64];
+    strftime(tmp, sizeof(tmp), "%Y%m%d%H%M%S", localtime(&timep));
+    return tmp;
+}
+
 const int L_MIN = 3, L_MAX = 10000;
 const int N_MIN = 1;
-const int buffer_size = 256;
+const int buffer_size = 1024;
+const int snapshot_MAX = 1024;
+const string current_time = getTime();
+const char *chartime = current_time.c_str();
 
-int main(int argc, char *argv[]) {
-    if (argc != 5 && argc != 6) {
-        cout << "Usage: " << argv[0] << " [dimension] [L] [N] [output_filename] [*snapshot_period]" << endl;
+
+
+int main(int argc, char *argv[]) {	
+	if (argc != 5 && argc != 7) {
+        cout << "Usage: " << argv[0] << " [dimension] [L] [N] [output_filename] [*snapshot_style] [*snapshot_time] " << endl;
         return EXIT_SUCCESS;
     }
     int dimension = atoi(argv[1]);
@@ -67,10 +85,24 @@ int main(int argc, char *argv[]) {
     }
     char *output_filename_ = argv[4];
 
-    int snapshot_period = 0;
-    if (argc == 6) {
-        snapshot_period = atoi(argv[5]);
+    int snapshot_time = 0;
+	int snapshot_style = 0;
+    if (argc == 7) {
+		snapshot_style = atoi(argv[5]);//0=cluster based, 1=counter based
+        snapshot_time = atoi(argv[6]);
+		if (snapshot_style != 0 && snapshot_style != 1) {
+			cerr << "Required: " << "snapshot style = 0 (cluster based) or 1 (counter based)." << endl;
+			cerr << "Exiting..." << endl;
+			return EXIT_FAILURE;
+		}
+		else if (snapshot_time<=0){
+			cerr << "Required: " << "snapshot time >0." << endl;
+			cerr << "Exiting..." << endl;
+			return EXIT_FAILURE;
+		}
     }
+	int snapshot_moments[snapshot_MAX] = { 0 };
+	int current_snapshot = 0;
 
     Dlca *p_dlca;
 
@@ -94,18 +126,48 @@ int main(int argc, char *argv[]) {
         cerr << "Exiting..." << endl;
         return EXIT_FAILURE;
     }
-    
+	int num_clusters_first = p_dlca->get_num_clusters();
+	int num_clusters_last = 1;
+	if (snapshot_style == 0) {
+		if (snapshot_time <= 0) {
+			cerr << "Required: " << "snapshot time >0." << endl;
+			cerr << "Exiting..." << endl;
+			return EXIT_FAILURE;
+		}
+		else {
+			if (snapshot_time > snapshot_MAX) {
+				cerr << "Required: " << "snapshot time <= " << snapshot_MAX << endl;
+				cerr << "Exiting..." << endl;
+				return EXIT_FAILURE;
+			}
+			double snapshot_interval = (double(num_clusters_first) - double(num_clusters_last)) / (double(snapshot_time) - 1.0);
+			for (int i = 0; i < snapshot_time - 2; i++) {
+				snapshot_moments[i] = round(num_clusters_first - (i + 1)*snapshot_interval);
+			}
+		}
+	}
+	else if (snapshot_style == 1) {
+		snapshot_time = snapshot_time;
+	}
+	else {
+		cerr << "Required: " << "snapshot style = 0 or 1"<<endl;
+		cerr << "Exiting..." << endl;
+		return EXIT_FAILURE;
+	}
+
     for (;;) {
         int num_clusters = p_dlca->get_num_clusters();
-        int counter = p_dlca->get_counter();
+        int counter = p_dlca->get_counter();		
 #ifdef _DEBUG
         cout << "Iter " << counter << ": " << num_clusters << " clusters" << endl;
 		cout << "Before:" << endl;
         p_dlca->visualize();
 #endif
+		//first smapshot for initial distribution of particles
 		if (counter == 0) {
 			char snapshot_filename[buffer_size];
-			sprintf(snapshot_filename, "%s_D%d_L%d_N%d_C%d_I%d_INITIAL.csv", output_filename_, dimension, L, N, num_clusters,counter);
+			
+			sprintf(snapshot_filename, "%s_%s_D%d_L%d_N%d_C%d_I%d_INITIAL.csv",chartime, output_filename_, dimension, L, N, num_clusters,counter);
 			ofstream ofs_snapshot(snapshot_filename);
 			if (!ofs_snapshot) {
 				cerr << "Failed to open file " << snapshot_filename << endl;
@@ -114,9 +176,25 @@ int main(int argc, char *argv[]) {
 			ofs_snapshot << *p_dlca;
 			ofs_snapshot.close();
 		}
-        if (snapshot_period > 0 && counter % snapshot_period == 0) {
+		// snapshot judged by clusters:
+		
+
+		if (snapshot_style == 0 && num_clusters==snapshot_moments[current_snapshot]) {
+			char snapshot_filename[buffer_size];
+			sprintf(snapshot_filename, "%s_%s_D%d_L%d_N%d_C%d_I%d.csv", chartime, output_filename_, dimension, L, N, num_clusters, counter);
+			ofstream ofs_snapshot(snapshot_filename);
+			if (!ofs_snapshot) {
+				cerr << "Failed to open file " << snapshot_filename << endl;
+				return EXIT_FAILURE;
+			}
+			ofs_snapshot << *p_dlca;
+			ofs_snapshot.close();
+			current_snapshot++;
+		}
+		//snapshot judged by iteration counts:
+		else if (snapshot_style == 1 && counter % snapshot_time == 0 && counter >0) {
             char snapshot_filename[buffer_size];
-            sprintf(snapshot_filename, "%s_D%d_L%d_N%d_C%d_I%d.csv", output_filename_, dimension, L, N, num_clusters, counter);
+            sprintf(snapshot_filename, "%s_%s_D%d_L%d_N%d_C%d_I%d.csv",chartime, output_filename_, dimension, L, N, num_clusters, counter);
             ofstream ofs_snapshot(snapshot_filename);
             if (!ofs_snapshot) {
                 cerr << "Failed to open file " << snapshot_filename << endl;
@@ -139,10 +217,10 @@ int main(int argc, char *argv[]) {
     }
 
     cout << "Total number of iterations: " << p_dlca->get_counter() << endl;
-    cout << "Writing result..." << endl;
+	cout << "Writing result..." << endl;
 
     char output_filename[buffer_size];
-	sprintf(output_filename, "%s_D%d_L%d_N%d_C%d_I%d_FINAL.csv", output_filename_, dimension, L, N, p_dlca->get_num_clusters(), p_dlca->get_counter());
+	sprintf(output_filename, "%s_%s_D%d_L%d_N%d_C%d_I%d_FINAL.csv",chartime, output_filename_, dimension, L, N, p_dlca->get_num_clusters(), p_dlca->get_counter());
     ofstream ofs_result(output_filename);
     if (!ofs_result) {
         cerr << "Failed to open file " << output_filename << endl;

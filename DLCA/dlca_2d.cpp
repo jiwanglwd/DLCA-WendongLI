@@ -60,7 +60,9 @@ Dlca2D::Dlca2D(int L, int N):
                     periodic(y_[pid] + dy)
                 );
                 if (pid_neighbor == EMPTY) continue;
-                Label label = uf_forest_.find(pid);
+
+				
+				Label label = uf_forest_.find(pid);
                 Label label_neighbor = uf_forest_.find(pid_neighbor);
                 if (label != label_neighbor) {
                     removed_arr[unite_and_splice(label, label_neighbor)] = true;
@@ -102,12 +104,34 @@ void Dlca2D::diffuse_(Label label) {
         for (Pid pid : cluster) {
             grids(x_[pid], y_[pid]) = EMPTY;
         }
+		//wendongLI
+		for (Pid pid : cluster) {
+			if (x_[pid] + vx < 0 || x_[pid] + vx >= L) {
+				vx = -vx;
+				break;
+			}
+			else {
+				vx = vx;
+			}
+		}
+		for (Pid pid : cluster) {
+			if (y_[pid] + vy < 0 || y_[pid] + vy >= L) {
+				vy = -vy;
+				break;
+			}
+			else {
+				vy = vy;
+			}
+		}
+		//end wendongli
+		//arrange moved cluster
         for (Pid pid : cluster) {
             grids(
                 x_[pid] = periodic(x_[pid] + vx),
                 y_[pid] = periodic(y_[pid] + vy)
             ) = pid;
         }
+		//check for neighbouring clusters and merge neighboured clusters to a new cluster
         for (Pid pid : cluster) {
             for (int dx : neighbors) {
                 for (int dy : neighbors) {
@@ -125,20 +149,42 @@ void Dlca2D::diffuse_(Label label) {
             }
         }
     } else {
-        offset_x_ += vx;
-        offset_y_ += vy;
         for (Label label_other : labels_) {
             if (label_other == label) continue;
+			//remove current cluster
             for (Pid pid : clusters_[label_other]) {
                 grids(x_[pid], y_[pid]) = EMPTY;
             }
+			//wendongLI adjust the speed vector, collide will lead to inversed direction
+			for (Pid pid : clusters_[label_other]) {
+				if (x_[pid] - vx < 0 || x_[pid] - vx >= L) {
+					vx = -vx;
+					break;
+				}
+				else {
+					vx = vx;
+				}
+			}
+			for (Pid pid : clusters_[label_other]) {
+				if (y_[pid] - vy < 0 || y_[pid] - vy >= L) {
+					vy = -vy;
+					break;
+				}
+				else {
+					vy = vy;
+				}
+			}
+			//end wendongli
             for (Pid pid : clusters_[label_other]) {
                 grids(
                     x_[pid] = periodic(x_[pid] - vx),
                     y_[pid] = periodic(y_[pid] - vy)
                 ) = pid;
             }
+			offset_x_ += vx;
+			offset_y_ += vy;
         }
+		//check for neighbouring clusters and merge neighboured clusters to a new cluster
         for (Label label_other : labels_) {
             if (label_other == label) continue;
             for (Pid pid : clusters_[label_other]) {
@@ -177,10 +223,13 @@ void Dlca2D::diffuse_(Label label) {
 
 Coordinate Dlca2D::periodic(Coordinate c) const {
     // Assume x and y are not too far away for the grid
+	// WendongLI: Particle collide on the boundaries
     if (c < 0) {
-        return c + L;
+        //return c + L;
+		return -c;
     } else if (c >= L) {
-        return c - L;
+        //return c - L;
+		return 2*(L -1)- c;
     } else {
         return c;
     }

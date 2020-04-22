@@ -21,6 +21,7 @@
 
 using std::shuffle;
 using std::cout;
+using std::endl;
 using std::cin;
 using std::uniform_int_distribution;
 
@@ -81,9 +82,6 @@ void Dlca::evolve() {
     cout << "Label " << label << ' ';
 #endif
     diffuse_(label);
-#ifdef _DEBUG
-    cin.get();
-#endif
 }
 
 int Dlca::get_num_clusters() const {

@@ -100,11 +100,23 @@ int main(int argc, char *argv[]) {
         int counter = p_dlca->get_counter();
 #ifdef _DEBUG
         cout << "Iter " << counter << ": " << num_clusters << " clusters" << endl;
-        //p_dlca->visualize();
+		cout << "Before:" << endl;
+        p_dlca->visualize();
 #endif
+		if (counter == 0) {
+			char snapshot_filename[buffer_size];
+			sprintf(snapshot_filename, "%s_D%d_L%d_N%d_C%d_I%d_INITIAL.txt", output_filename_, dimension, L, N, num_clusters,counter);
+			ofstream ofs_snapshot(snapshot_filename);
+			if (!ofs_snapshot) {
+				cerr << "Failed to open file " << snapshot_filename << endl;
+				return EXIT_FAILURE;
+			}
+			ofs_snapshot << *p_dlca;
+			ofs_snapshot.close();
+		}
         if (snapshot_period > 0 && counter % snapshot_period == 0) {
             char snapshot_filename[buffer_size];
-            sprintf(snapshot_filename, "%s.I%07d.txt", output_filename_, counter);
+            sprintf(snapshot_filename, "%s_D%d_L%d_N%d_C%d_I%d.txt", output_filename_, dimension, L, N, num_clusters, counter);
             ofstream ofs_snapshot(snapshot_filename);
             if (!ofs_snapshot) {
                 cerr << "Failed to open file " << snapshot_filename << endl;
@@ -115,6 +127,12 @@ int main(int argc, char *argv[]) {
         }
         if (num_clusters > 1) {
             p_dlca->evolve();
+#ifdef _DEBUG
+			cout << "After:" << endl;
+			p_dlca->visualize();
+			cout << "Press any Key..." << endl;
+			cin.get();
+#endif
         } else {
             break;
         }
@@ -124,11 +142,7 @@ int main(int argc, char *argv[]) {
     cout << "Writing result..." << endl;
 
     char output_filename[buffer_size];
-    if (snapshot_period > 0) {
-        sprintf(output_filename, "%s.I%07d.FINAL.txt", output_filename_, p_dlca->get_counter());
-    } else {
-        sprintf(output_filename, "%s.txt", output_filename_);
-    }
+	sprintf(output_filename, "%s_D%d_L%d_N%d_C%d_I%d_FINAL.txt", output_filename_, dimension, L, N, p_dlca->get_num_clusters(), p_dlca->get_counter());
     ofstream ofs_result(output_filename);
     if (!ofs_result) {
         cerr << "Failed to open file " << output_filename << endl;

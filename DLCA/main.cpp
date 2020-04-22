@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 #endif
 		if (counter == 0) {
 			char snapshot_filename[buffer_size];
-			sprintf(snapshot_filename, "%s_D%d_L%d_N%d_C%d_I%d_INITIAL.txt", output_filename_, dimension, L, N, num_clusters,counter);
+			sprintf(snapshot_filename, "%s_D%d_L%d_N%d_C%d_I%d_INITIAL.csv", output_filename_, dimension, L, N, num_clusters,counter);
 			ofstream ofs_snapshot(snapshot_filename);
 			if (!ofs_snapshot) {
 				cerr << "Failed to open file " << snapshot_filename << endl;
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
 		}
         if (snapshot_period > 0 && counter % snapshot_period == 0) {
             char snapshot_filename[buffer_size];
-            sprintf(snapshot_filename, "%s_D%d_L%d_N%d_C%d_I%d.txt", output_filename_, dimension, L, N, num_clusters, counter);
+            sprintf(snapshot_filename, "%s_D%d_L%d_N%d_C%d_I%d.csv", output_filename_, dimension, L, N, num_clusters, counter);
             ofstream ofs_snapshot(snapshot_filename);
             if (!ofs_snapshot) {
                 cerr << "Failed to open file " << snapshot_filename << endl;
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
     cout << "Writing result..." << endl;
 
     char output_filename[buffer_size];
-	sprintf(output_filename, "%s_D%d_L%d_N%d_C%d_I%d_FINAL.txt", output_filename_, dimension, L, N, p_dlca->get_num_clusters(), p_dlca->get_counter());
+	sprintf(output_filename, "%s_D%d_L%d_N%d_C%d_I%d_FINAL.csv", output_filename_, dimension, L, N, p_dlca->get_num_clusters(), p_dlca->get_counter());
     ofstream ofs_result(output_filename);
     if (!ofs_result) {
         cerr << "Failed to open file " << output_filename << endl;

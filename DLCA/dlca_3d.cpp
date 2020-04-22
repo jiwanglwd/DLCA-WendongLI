@@ -146,6 +146,7 @@ void Dlca3D::diffuse_(Label label) {
                 z_[pid] = periodic(z_[pid] + vz)
             ) = pid;
         }
+		//check for neighbouring clusters and merge neighboured clusters to a new cluster
         for (Pid pid : cluster) {
             for (int dx : neighbors) {
                 for (int dy : neighbors) {
@@ -203,6 +204,9 @@ void Dlca3D::diffuse_(Label label) {
 				}
 			}
 			//end wendongli
+			//offset_x_ += vx;
+			//offset_y_ += vy;
+			//offset_z_ += vz;
             for (Pid pid : clusters_[label_other]) {
                 grids(
                     x_[pid] = periodic(x_[pid] - vx),
@@ -210,10 +214,9 @@ void Dlca3D::diffuse_(Label label) {
                     z_[pid] = periodic(z_[pid] - vz)
                 ) = pid;
             }
-			offset_x_ += vx;
-			offset_y_ += vy;
-			offset_z_ += vz;
+
         }
+		//check for neighbouring clusters and merge neighboured clusters to a new cluster
         for (Label label_other : labels_) {
             if (label_other == label) continue;
             for (Pid pid : clusters_[label_other]) {
@@ -261,6 +264,7 @@ Coordinate Dlca3D::periodic(Coordinate c) const {
     } else if (c >= L) {
         return 2*(L-1)-c;
     } else {
+
         return c;
     }
 }
@@ -270,7 +274,7 @@ Pid &Dlca3D::grids(Coordinate x, Coordinate y, Coordinate z) const {
 }
 
 void Dlca3D::print_particle(ostream &os, Pid pid) const {
-    os << periodic(x_[pid] + offset_x_) << ' '
-       << periodic(y_[pid] + offset_y_) << ' '
+    os << periodic(x_[pid] + offset_x_) << ','
+       << periodic(y_[pid] + offset_y_) << ','
        << periodic(z_[pid] + offset_z_);
 }

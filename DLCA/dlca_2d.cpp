@@ -175,14 +175,15 @@ void Dlca2D::diffuse_(Label label) {
 				}
 			}
 			//end wendongli
+			//offset_x_ += vx;
+			//offset_y_ += vy;
             for (Pid pid : clusters_[label_other]) {
                 grids(
                     x_[pid] = periodic(x_[pid] - vx),
                     y_[pid] = periodic(y_[pid] - vy)
                 ) = pid;
             }
-			offset_x_ += vx;
-			offset_y_ += vy;
+
         }
 		//check for neighbouring clusters and merge neighboured clusters to a new cluster
         for (Label label_other : labels_) {
@@ -240,7 +241,7 @@ Pid &Dlca2D::grids(Coordinate x, Coordinate y) const {
 }
 
 void Dlca2D::print_particle(ostream &os, Pid pid) const {
-    os << periodic(x_[pid] + offset_x_) << ' '
+    os << periodic(x_[pid] + offset_x_) << ','
        << periodic(y_[pid] + offset_y_);
 }
 

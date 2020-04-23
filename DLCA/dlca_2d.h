@@ -34,6 +34,8 @@ public:
 
     void visualize() const override;
 
+
+
 private:
     static const int neighbors[];
 
@@ -53,7 +55,7 @@ private:
     // Pairwise traversal of complexity O(N^2) is thus avoided.
     Pid &grids(Coordinate x, Coordinate y) const;
 
-    void print_particle(ostream &os, Pid pid) const override;
+	void print_particle(ostream &os, Pid pid) const override;
 
     // Displacement of the reference frame
     int offset_x_ = 0;

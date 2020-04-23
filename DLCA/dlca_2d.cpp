@@ -242,7 +242,7 @@ Pid &Dlca2D::grids(Coordinate x, Coordinate y) const {
 
 void Dlca2D::print_particle(ostream &os, Pid pid) const {
     os << periodic(x_[pid] + offset_x_) << ','
-       << periodic(y_[pid] + offset_y_);
+       << periodic(y_[pid] + offset_y_) ;
 }
 
 ostream &operator<<(ostream &os, const Dlca2D &dlca_2d) {

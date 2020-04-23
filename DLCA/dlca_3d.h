@@ -26,6 +26,8 @@ public:
     explicit Dlca3D(int L, int N);
     ~Dlca3D();
 
+
+
 private:
     static const int neighbors[];
 
@@ -39,7 +41,7 @@ private:
 
     Pid &grids(Coordinate x, Coordinate y, Coordinate z) const;
 
-    void print_particle(ostream &os, Pid pid) const override;
+	void print_particle(ostream &os, Pid pid) const override;
 
     int offset_x_ = 0;
     int offset_y_ = 0;

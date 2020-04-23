@@ -87,11 +87,23 @@ void Dlca::evolve() {
 int Dlca::get_num_clusters() const {
     return labels_.size();
 }
+int Dlca::get_clusters_label(Pid pid) const
+{
+	for (Label label_now : labels_) {
+		for (Pid pid_now : clusters_[label_now]) {
+			if (pid == pid_now) {
+				return label_now;
+			}
+		}
+	}
+	return -1;
+}
 
 ostream &operator<<(ostream &os, const Dlca &dlca) {
     for (Pid pid = 0; pid < dlca.N; ++pid) {
+		os << pid << ',';
         dlca.print_particle(os, pid);
-        os << '\n';
+		os << ',' << dlca.get_clusters_label(pid)<<'\n';
     }
     return os;
 }

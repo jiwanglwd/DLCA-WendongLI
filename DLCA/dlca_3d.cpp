@@ -273,8 +273,8 @@ Pid &Dlca3D::grids(Coordinate x, Coordinate y, Coordinate z) const {
     return grids_[x * L * L + y * L + z];
 }
 
-void Dlca3D::print_particle(ostream &os, Pid pid) const {
+void Dlca3D::print_particle(ostream &os, Pid pid)const{
     os << periodic(x_[pid] + offset_x_) << ','
        << periodic(y_[pid] + offset_y_) << ','
-       << periodic(z_[pid] + offset_z_);
+       << periodic(z_[pid] + offset_z_) ;
 }

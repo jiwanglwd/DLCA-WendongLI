@@ -48,6 +48,11 @@ Element UFForest::find(Element i) {
     return parent_[i] == i ? i : parent_[i] = find(parent_[i]);
 }
 
+Element UFForest::getLabel(Element i) const
+{
+	return parent_[i];
+}
+
 bool UFForest::is_connected(Element i, Element j) {
     return find(i) == find(j);
 }

@@ -57,7 +57,11 @@ public:
     // Return the number of clusters left
     int get_num_clusters() const;
 
-    friend ostream &operator<<(ostream &os, const Dlca &Dlca);
+	int get_clusters_label(Pid pid) const;
+
+	friend ostream &operator<<(ostream &os, const Dlca &Dlca);
+
+
 
 protected:
     // Grid id
@@ -89,7 +93,7 @@ private:
     // Diffuse the specified cluster and update cluster_set_
     virtual void diffuse_(Label label) = 0;
 
-    // Print the representation of pid to an output stream, without newline
-    virtual void print_particle(ostream &os, Pid pid) const = 0;
+	// Print the representation of pid to an output stream, without newline
+	virtual void print_particle(ostream &os, Pid pid) const = 0;
 
 };

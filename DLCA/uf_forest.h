@@ -38,6 +38,8 @@ public:
     // Get the label of the connected component containing a specific element
     Element find(Element i);
 
+	Element getLabel(Element i) const;
+
     // Whether two elements are connected
     bool is_connected(Element i, Element j);
 

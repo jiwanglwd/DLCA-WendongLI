@@ -26,6 +26,8 @@
 #include <ctime>
 #include <string>
 #include <cmath>
+#include <io.h>
+#include <direct.h>
 
 using namespace std;
 using std::cin;
@@ -106,6 +108,13 @@ int main(int argc, char *argv[]) {
 	int snapshot_moments[snapshot_MAX] = { 0 };
 	int current_snapshot = 0;
 
+	char foldername[buffer_size];
+	sprintf(foldername, "%s_D%d_L%d_N%d_SS%d_ST%d", chartime, dimension, L, N, snapshot_style, snapshot_time);
+	if (0 != _access(foldername, 0))
+	{
+		// if this folder not exist, create a new one.
+		_mkdir(foldername);   // 返回 0 表示创建成功，-1 表示失败
+	}
     Dlca *p_dlca;
 
     // Choose the appropriate concrete subclass of Dlca, based on dimension
@@ -159,7 +168,7 @@ int main(int argc, char *argv[]) {
 
     for (;;) {
         int num_clusters = p_dlca->get_num_clusters();
-        int counter = p_dlca->get_counter();		
+        int counter = p_dlca->get_counter();
 #ifdef _DEBUG
         cout << "Iter " << counter << ": " << num_clusters << " clusters" << endl;
 		cout << "Before:" << endl;
@@ -167,9 +176,8 @@ int main(int argc, char *argv[]) {
 #endif
 		//first smapshot for initial distribution of particles
 		if (counter == 0) {
-			char snapshot_filename[buffer_size];
-			
-			sprintf(snapshot_filename, "%s_%s_D%d_L%d_N%d_C%d_I%d_INITIAL.csv",chartime, output_filename_, dimension, L, N, num_clusters,counter);
+			char snapshot_filename[buffer_size];			
+			sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d_INITIAL.csv", foldername, output_filename_, dimension, L, N, num_clusters,counter);
 			ofstream ofs_snapshot(snapshot_filename);
 			if (!ofs_snapshot) {
 				cerr << "Failed to open file " << snapshot_filename << endl;
@@ -183,7 +191,7 @@ int main(int argc, char *argv[]) {
 
 		if (snapshot_style == 0 && num_clusters==snapshot_moments[current_snapshot]) {
 			char snapshot_filename[buffer_size];
-			sprintf(snapshot_filename, "%s_%s_D%d_L%d_N%d_C%d_I%d.csv", chartime, output_filename_, dimension, L, N, num_clusters, counter);
+			sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d.csv", foldername, output_filename_, dimension, L, N, num_clusters, counter);
 			ofstream ofs_snapshot(snapshot_filename);
 			if (!ofs_snapshot) {
 				cerr << "Failed to open file " << snapshot_filename << endl;
@@ -192,11 +200,12 @@ int main(int argc, char *argv[]) {
 			ofs_snapshot << *p_dlca;
 			ofs_snapshot.close();
 			current_snapshot++;
+			cout << "Iter" << counter << ": " << num_clusters << " clusters..." << endl;
 		}
 		//snapshot judged by iteration counts:
 		else if (snapshot_style == 1 && counter % snapshot_time == 0 && counter >0) {
             char snapshot_filename[buffer_size];
-            sprintf(snapshot_filename, "%s_%s_D%d_L%d_N%d_C%d_I%d.csv",chartime, output_filename_, dimension, L, N, num_clusters, counter);
+            sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d.csv", foldername,output_filename_, dimension, L, N, num_clusters, counter);
             ofstream ofs_snapshot(snapshot_filename);
             if (!ofs_snapshot) {
                 cerr << "Failed to open file " << snapshot_filename << endl;
@@ -204,6 +213,7 @@ int main(int argc, char *argv[]) {
             }
             ofs_snapshot << *p_dlca;
             ofs_snapshot.close();
+			cout << "Iter" << counter << ": " << num_clusters << " clusters..." << endl;
         }
         if (num_clusters > 1) {
             p_dlca->evolve();
@@ -222,7 +232,7 @@ int main(int argc, char *argv[]) {
 	cout << "Writing result..." << endl;
 
     char output_filename[buffer_size];
-	sprintf(output_filename, "%s_%s_D%d_L%d_N%d_C%d_I%d_FINAL.csv",chartime, output_filename_, dimension, L, N, p_dlca->get_num_clusters(), p_dlca->get_counter());
+	sprintf(output_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d_FINAL.csv", foldername, output_filename_, dimension, L, N, p_dlca->get_num_clusters(), p_dlca->get_counter());
     ofstream ofs_result(output_filename);
     if (!ofs_result) {
         cerr << "Failed to open file " << output_filename << endl;

@@ -101,7 +101,7 @@ int Dlca::get_clusters_label(Pid pid) const
 
 ostream &operator<<(ostream &os, const Dlca &dlca) {
     for (Pid pid = 0; pid < dlca.N; ++pid) {
-		os << pid << ',';
+		os << pid+1 << ',';
         dlca.print_particle(os, pid);
 		os << ',' << dlca.get_clusters_label(pid)<<'\n';
     }

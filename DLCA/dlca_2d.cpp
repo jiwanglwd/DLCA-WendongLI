@@ -55,6 +55,7 @@ Dlca2D::Dlca2D(int L, int N):
         for (int dx : neighbors) {
             for (int dy : neighbors) {
                 if (dx == 0 && dy == 0) continue;
+				if (dx != 0 && dy != 0) continue;//do not treat diagnol as connected
                 Pid pid_neighbor = grids(
                     periodic(x_[pid] + dx),
                     periodic(y_[pid] + dy)
@@ -94,7 +95,7 @@ void Dlca2D::diffuse_(Label label) {
     do {
         vx = int_distro(rand_engine);
         vy = int_distro(rand_engine);
-    } while (vx == 0 && vy == 0);
+    } while ((vx == 0 && vy == 0) || (vx != 0 && vy != 0));
 #ifdef _DEBUG
     cout << "Diffuse " << vx << ' ' << vy << endl;
 #endif
@@ -105,24 +106,24 @@ void Dlca2D::diffuse_(Label label) {
             grids(x_[pid], y_[pid]) = EMPTY;
         }
 		//wendongLI
-		for (Pid pid : cluster) {
-			if (x_[pid] + vx < 0 || x_[pid] + vx >= L) {
-				vx = -vx;
-				break;
-			}
-			else {
-				vx = vx;
-			}
-		}
-		for (Pid pid : cluster) {
-			if (y_[pid] + vy < 0 || y_[pid] + vy >= L) {
-				vy = -vy;
-				break;
-			}
-			else {
-				vy = vy;
-			}
-		}
+		//for (Pid pid : cluster) {
+		//	if (x_[pid] + vx < 0 || x_[pid] + vx >= L) {
+		//		vx = -vx;
+		//		break;
+		//	}
+		//	else {
+		//		vx = vx;
+		//	}
+		//}
+		//for (Pid pid : cluster) {
+		//	if (y_[pid] + vy < 0 || y_[pid] + vy >= L) {
+		//		vy = -vy;
+		//		break;
+		//	}
+		//	else {
+		//		vy = vy;
+		//	}
+		//}
 		//end wendongli
 		//arrange moved cluster
         for (Pid pid : cluster) {
@@ -136,6 +137,7 @@ void Dlca2D::diffuse_(Label label) {
             for (int dx : neighbors) {
                 for (int dy : neighbors) {
                     if (dx == 0 && dy == 0) continue;
+					if (dx != 0 && dy != 0) continue;//do not treat diagnol as connected
                     Pid pid_neighbor = grids(
                         periodic(x_[pid] + dx),
                         periodic(y_[pid] + dy)
@@ -149,6 +151,8 @@ void Dlca2D::diffuse_(Label label) {
             }
         }
     } else {
+		offset_x_ += vx;
+		offset_y_ += vy;
         for (Label label_other : labels_) {
             if (label_other == label) continue;
 			//remove current cluster
@@ -156,28 +160,28 @@ void Dlca2D::diffuse_(Label label) {
                 grids(x_[pid], y_[pid]) = EMPTY;
             }
 			//wendongLI adjust the speed vector, collide will lead to inversed direction
-			for (Pid pid : clusters_[label_other]) {
-				if (x_[pid] - vx < 0 || x_[pid] - vx >= L) {
-					vx = -vx;
-					break;
-				}
-				else {
-					vx = vx;
-				}
-			}
-			for (Pid pid : clusters_[label_other]) {
-				if (y_[pid] - vy < 0 || y_[pid] - vy >= L) {
-					vy = -vy;
-					break;
-				}
-				else {
-					vy = vy;
-				}
-			}
+			//for (Pid pid : clusters_[label_other]) {
+			//	if (x_[pid] - vx < 0 || x_[pid] - vx >= L) {
+			//		vx = -vx;
+			//		break;
+			//	}
+			//	else {
+			//		vx = vx;
+			//	}
+			//}
+			//for (Pid pid : clusters_[label_other]) {
+			//	if (y_[pid] - vy < 0 || y_[pid] - vy >= L) {
+			//		vy = -vy;
+			//		break;
+			//	}
+			//	else {
+			//		vy = vy;
+			//	}
+			//}
 			//end wendongli
-			//offset_x_ += vx;
-			//offset_y_ += vy;
+
             for (Pid pid : clusters_[label_other]) {
+
                 grids(
                     x_[pid] = periodic(x_[pid] - vx),
                     y_[pid] = periodic(y_[pid] - vy)
@@ -192,6 +196,7 @@ void Dlca2D::diffuse_(Label label) {
                 for (int dx : neighbors) {
                     for (int dy : neighbors) {
                         if (dx == 0 && dy == 0) continue;
+						if (dx != 0 && dy != 0) continue;//do not treat diagnol as connected
                         Pid pid_neighbor = grids(
                             periodic(x_[pid] + dx),
                             periodic(y_[pid] + dy)
@@ -226,11 +231,11 @@ Coordinate Dlca2D::periodic(Coordinate c) const {
     // Assume x and y are not too far away for the grid
 	// WendongLI: Particle collide on the boundaries
     if (c < 0) {
-        //return c + L;
-		return -c;
+        return c + L;
+		//return -c;
     } else if (c >= L) {
-        //return c - L;
-		return 2*(L -1)- c;
+        return c - L;
+		//return 2*(L -1)- c;
     } else {
         return c;
     }
@@ -241,8 +246,8 @@ Pid &Dlca2D::grids(Coordinate x, Coordinate y) const {
 }
 
 void Dlca2D::print_particle(ostream &os, Pid pid) const {
-    os << periodic(x_[pid] + offset_x_) << ','
-       << periodic(y_[pid] + offset_y_) ;
+	os << periodic(x_[pid]+offset_x_) << ','
+	<< periodic(y_[pid]+offset_y_);
 }
 
 ostream &operator<<(ostream &os, const Dlca2D &dlca_2d) {

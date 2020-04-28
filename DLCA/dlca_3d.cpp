@@ -58,6 +58,10 @@ Dlca3D::Dlca3D(int L, int N) :
             for (int dy : neighbors) {
                 for (int dz : neighbors) {
                     if (dx == 0 && dy == 0 && dz == 0) continue;
+					if (dx == 0 && dy != 0 && dz != 0) continue;
+					if (dx != 0 && dy == 0 && dz != 0) continue;
+					if (dx != 0 && dy != 0 && dz == 0) continue;
+					if (dx != 0 && dy != 0 && dz != 0) continue;
                     Pid pid_neighbor = grids(
                         periodic(x_[pid] + dx),
                         periodic(y_[pid] + dy),
@@ -95,7 +99,11 @@ void Dlca3D::diffuse_(Label label) {
         vx = int_distro(rand_engine);
         vy = int_distro(rand_engine);
         vz = int_distro(rand_engine);
-    } while (vx == 0 && vy == 0 && vz == 0);
+    } while (vx == 0 && vy == 0 && vz == 0 ||
+		vx == 0 && vy != 0 && vz != 0 ||
+		vx != 0 && vy == 0 && vz != 0 ||
+		vx != 0 && vy != 0 && vz == 0 ||
+		vx != 0 && vy != 0 && vz != 0);
 #ifdef _DEBUG
 	cout << "Diffuse " << vx << ' ' << vy << ' ' << vz << endl;
 #endif
@@ -152,6 +160,10 @@ void Dlca3D::diffuse_(Label label) {
                 for (int dy : neighbors) {
                     for (int dz : neighbors) {
                         if (dx == 0 && dy == 0 && dz == 0) continue;
+						if (dx == 0 && dy != 0 && dz != 0) continue;
+						if (dx != 0 && dy == 0 && dz != 0) continue;
+						if (dx != 0 && dy != 0 && dz == 0) continue;
+						if (dx != 0 && dy != 0 && dz != 0) continue;
                         Pid pid_neighbor = grids(
                             periodic(x_[pid] + dx),
                             periodic(y_[pid] + dy),
@@ -167,6 +179,9 @@ void Dlca3D::diffuse_(Label label) {
             }
         }
     } else {
+		offset_x_ += vx;
+		offset_y_ += vy;
+		offset_z_ += vz;
         for (Label label_other : labels_) {
             if (label_other == label) continue;
             for (Pid pid : clusters_[label_other]) {
@@ -174,39 +189,37 @@ void Dlca3D::diffuse_(Label label) {
             }
 			//wendongLI adjust the speed vector, collide will lead to inversed direction
 			//x
-			for (Pid pid : clusters_[label_other]) {
-				if (x_[pid] - vx < 0 || x_[pid] - vx >= L) {
-					vx = -vx;
-					break;
-				}
-				else {
-					vx = vx;
-				}
-			}
-			//y
-			for (Pid pid : clusters_[label_other]) {
-				if (y_[pid] - vy < 0 || y_[pid] - vy >= L) {
-					vy = -vy;
-					break;
-				}
-				else {
-					vy = vy;
-				}
-			}
-			//z
-			for (Pid pid : clusters_[label_other]) {
-				if (z_[pid] - vz < 0 || z_[pid] - vz >= L) {
-					vz = -vz;
-					break;
-				}
-				else {
-					vz = vz;
-				}
-			}
+			//for (Pid pid : clusters_[label_other]) {
+			//	if (x_[pid] - vx < 0 || x_[pid] - vx >= L) {
+			//		vx = -vx;
+			//		break;
+			//	}
+			//	else {
+			//		vx = vx;
+			//	}
+			//}
+			////y
+			//for (Pid pid : clusters_[label_other]) {
+			//	if (y_[pid] - vy < 0 || y_[pid] - vy >= L) {
+			//		vy = -vy;
+			//		break;
+			//	}
+			//	else {
+			//		vy = vy;
+			//	}
+			//}
+			////z
+			//for (Pid pid : clusters_[label_other]) {
+			//	if (z_[pid] - vz < 0 || z_[pid] - vz >= L) {
+			//		vz = -vz;
+			//		break;
+			//	}
+			//	else {
+			//		vz = vz;
+			//	}
+			//}
 			//end wendongli
-			//offset_x_ += vx;
-			//offset_y_ += vy;
-			//offset_z_ += vz;
+
             for (Pid pid : clusters_[label_other]) {
                 grids(
                     x_[pid] = periodic(x_[pid] - vx),
@@ -224,6 +237,10 @@ void Dlca3D::diffuse_(Label label) {
                     for (int dy : neighbors) {
                         for (int dz : neighbors) {
                             if (dx == 0 && dy == 0 && dz == 0) continue;
+							if (dx == 0 && dy != 0 && dz != 0) continue;
+							if (dx != 0 && dy == 0 && dz != 0) continue;
+							if (dx != 0 && dy != 0 && dz == 0) continue;
+							if (dx != 0 && dy != 0 && dz != 0) continue;
                             Pid pid_neighbor = grids(
                                 periodic(x_[pid] + dx),
                                 periodic(y_[pid] + dy),
@@ -259,14 +276,17 @@ void Dlca3D::diffuse_(Label label) {
 Coordinate Dlca3D::periodic(Coordinate c) const {
     // Assume x and y are not too far away for the grid
 	// WendongLI: Particle collide on the boundaries
-    if (c < 0) {
-        return -c;
-    } else if (c >= L) {
-        return 2*(L-1)-c;
-    } else {
-
-        return c;
-    }
+	if (c < 0) {
+		return c + L;
+		//return -c;
+	}
+	else if (c >= L) {
+		return c - L;
+		//return 2*(L -1)- c;
+	}
+	else {
+		return c;
+	}
 }
 
 Pid &Dlca3D::grids(Coordinate x, Coordinate y, Coordinate z) const {

@@ -25,7 +25,7 @@
 #include "uf_forest.h"
 #include <ctime>
 #include <string>
-#include <cmath>
+#include <math.h>
 #include <io.h>
 #include <direct.h>
 
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
 		}
     }
 	int snapshot_moments[snapshot_MAX] = { 0 };
-	int current_snapshot = 0;
+	int current_step = 1;
 
 	char foldername[buffer_size];
 	sprintf(foldername, "%s_D%d_L%d_N%d_SS%d_ST%d", chartime, dimension, L, N, snapshot_style, snapshot_time);
@@ -165,7 +165,8 @@ int main(int argc, char *argv[]) {
 		cerr << "Exiting..." << endl;
 		return EXIT_FAILURE;
 	}
-
+	char logfilename[buffer_size];
+	sprintf(logfilename, "%s\\log_D%d_L%d_N%d.txt", foldername, dimension, L, N);
     for (;;) {
         int num_clusters = p_dlca->get_num_clusters();
         int counter = p_dlca->get_counter();
@@ -175,45 +176,99 @@ int main(int argc, char *argv[]) {
         p_dlca->visualize();
 #endif
 		//first smapshot for initial distribution of particles
-		if (counter == 0) {
+		if (counter == 0 && num_clusters>1) {
 			char snapshot_filename[buffer_size];			
-			sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d_INITIAL.csv", foldername, output_filename_, dimension, L, N, num_clusters,counter);
-			ofstream ofs_snapshot(snapshot_filename);
+			//sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d_INITIAL.csv", foldername, output_filename_, dimension, L, N, num_clusters,counter);
+			sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d.csv", foldername, output_filename_, dimension, L, N);
+			ofstream ofs_snapshot(snapshot_filename, ios::app);
 			if (!ofs_snapshot) {
 				cerr << "Failed to open file " << snapshot_filename << endl;
 				return EXIT_FAILURE;
 			}
 			ofs_snapshot << *p_dlca;
 			ofs_snapshot.close();
+
+			cout << "Step " << 1 << ", Iter " << counter  << ": " << num_clusters << " clusters..." << endl;
+
+			ofstream ofs_logfile(logfilename, ios::app);
+			if (!ofs_logfile) {
+				cerr << "Failed to open file " << logfilename << endl;
+				return EXIT_FAILURE;
+			}
+			ofs_logfile<< "Step " << 1 << ", Iter " << counter  << ": " << num_clusters << " clusters..." << endl;
+			ofs_logfile.close();
 		}
 		// snapshot judged by clusters:
 		
+		//if (counter % 10 == 1) {
+		//	int aaa;
+		//	aaa = 1;
+		//}
 
-		if (snapshot_style == 0 && num_clusters==snapshot_moments[current_snapshot]) {
+		//if (counter % 100 == 1) {
+		//	int aaa;
+		//	aaa = 1;
+		//}
+
+		//if (counter % 1000 == 1) {
+		//	int aaa;
+		//	aaa = 1;
+		//}
+
+		//if (counter % 10000 == 1) {
+		//	int aaa;
+		//	aaa = 1;
+		//}
+
+		if (snapshot_style == 0 && num_clusters==snapshot_moments[current_step-1] && num_clusters>1) {
 			char snapshot_filename[buffer_size];
-			sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d.csv", foldername, output_filename_, dimension, L, N, num_clusters, counter);
-			ofstream ofs_snapshot(snapshot_filename);
+			//sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d.csv", foldername, output_filename_, dimension, L, N, num_clusters, counter);
+			//sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d_INTERMEDIATE.csv", foldername, output_filename_, dimension, L, N);
+			sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d.csv", foldername, output_filename_, dimension, L, N);
+			ofstream ofs_snapshot(snapshot_filename,ios::app);
 			if (!ofs_snapshot) {
 				cerr << "Failed to open file " << snapshot_filename << endl;
 				return EXIT_FAILURE;
 			}
 			ofs_snapshot << *p_dlca;
 			ofs_snapshot.close();
-			current_snapshot++;
-			cout << "Iter" << counter << ": " << num_clusters << " clusters..." << endl;
+			
+			cout <<"Step "<< current_step+1 << ", Iter " << counter << ": " << num_clusters << " clusters..." << endl;			
+
+			ofstream ofs_logfile(logfilename, ios::app);
+			if (!ofs_logfile) {
+				cerr << "Failed to open file " << logfilename << endl;
+				return EXIT_FAILURE;
+			}
+			ofs_logfile << "Step " << current_step + 1 << ", Iter " << counter << ": " << num_clusters << " clusters..." << endl;
+			ofs_logfile.close();
+
+			current_step++;
 		}
 		//snapshot judged by iteration counts:
-		else if (snapshot_style == 1 && counter % snapshot_time == 0 && counter >0) {
+		else if (snapshot_style == 1 && (counter+1) % snapshot_time == 0 && counter >0 && num_clusters>1) {
             char snapshot_filename[buffer_size];
-            sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d.csv", foldername,output_filename_, dimension, L, N, num_clusters, counter);
-            ofstream ofs_snapshot(snapshot_filename);
+            //sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d.csv", foldername,output_filename_, dimension, L, N, num_clusters, counter);
+			//sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d_INTERMEDIATE.csv", foldername, output_filename_, dimension, L, N);
+			sprintf(snapshot_filename, "%s\\%s_D%d_L%d_N%d.csv", foldername, output_filename_, dimension, L, N);
+            ofstream ofs_snapshot(snapshot_filename, ios::app);
             if (!ofs_snapshot) {
                 cerr << "Failed to open file " << snapshot_filename << endl;
                 return EXIT_FAILURE;
             }
             ofs_snapshot << *p_dlca;
             ofs_snapshot.close();
-			cout << "Iter" << counter << ": " << num_clusters << " clusters..." << endl;
+			cout << "Step " << current_step+1 << ", Iter " << counter << ": " << num_clusters << " clusters..." << endl;
+
+			ofstream ofs_logfile(logfilename, ios::app);
+			if (!ofs_logfile) {
+				cerr << "Failed to open file " << logfilename << endl;
+				return EXIT_FAILURE;
+			}
+			ofs_logfile << "Step " << current_step + 1 << ", Iter " << counter << ": " << num_clusters << " clusters..." << endl;
+			ofs_logfile.close();
+
+			current_step++;
         }
         if (num_clusters > 1) {
             p_dlca->evolve();
@@ -227,13 +282,23 @@ int main(int argc, char *argv[]) {
             break;
         }
     }
+	cout << "Final: Iter " << p_dlca->get_counter() << ": " << p_dlca->get_num_clusters() << " clusters..." << endl;
+
+	ofstream ofs_logfile(logfilename, ios::app);
+	if (!ofs_logfile) {
+		cerr << "Failed to open file " << logfilename << endl;
+		return EXIT_FAILURE;
+	}
+	ofs_logfile << "Final: Iter " << p_dlca->get_counter() << ": " << p_dlca->get_num_clusters() << " clusters..." << endl;
+	ofs_logfile.close();
 
     cout << "Total number of iterations: " << p_dlca->get_counter() << endl;
 	cout << "Writing result..." << endl;
 
     char output_filename[buffer_size];
-	sprintf(output_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d_FINAL.csv", foldername, output_filename_, dimension, L, N, p_dlca->get_num_clusters(), p_dlca->get_counter());
-    ofstream ofs_result(output_filename);
+	//sprintf(output_filename, "%s\\%s_D%d_L%d_N%d_C%d_I%d_FINAL.csv", foldername, output_filename_, dimension, L, N, p_dlca->get_num_clusters(), p_dlca->get_counter());
+	sprintf(output_filename, "%s\\%s_D%d_L%d_N%d.csv", foldername, output_filename_, dimension, L, N);
+	ofstream ofs_result(output_filename, ios::app);
     if (!ofs_result) {
         cerr << "Failed to open file " << output_filename << endl;
         return EXIT_FAILURE;

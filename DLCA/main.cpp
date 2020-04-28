@@ -307,7 +307,7 @@ int main(int argc, char *argv[]) {
     ofs_result.close();
 	
 	ofstream fileposition("FilePosition");
-	fileposition << foldername << "\\" << output_filename << endl;
+	fileposition << output_filename << endl;
 	fileposition.close();
 
     delete p_dlca;
